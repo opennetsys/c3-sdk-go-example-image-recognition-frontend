@@ -41,6 +41,7 @@
     "common/hexutil",
     "common/netutil",
     "common/stringutil",
+    "common/txparamcoder",
     "config",
     "core/chain/mainchain",
     "core/chain/merkle",
@@ -1050,9 +1051,11 @@
   analyzer-version = 1
   input-imports = [
     "github.com/c3systems/c3-go/common/c3crypto",
+    "github.com/c3systems/c3-go/common/txparamcoder",
     "github.com/c3systems/c3-go/core/chain/mainchain",
     "github.com/c3systems/c3-go/core/chain/statechain",
     "github.com/c3systems/c3-go/core/p2p/protobuff",
+    "github.com/c3systems/c3-go/core/types/methods",
     "github.com/c3systems/c3-go/node/types",
     "github.com/gxed/pubsub",
     "github.com/ipfs/go-datastore",
@@ -1065,6 +1068,7 @@
     "github.com/ipfs/go-ipfs-routing/mock",
     "github.com/libp2p/go-conn-security-multistream",
     "github.com/libp2p/go-libp2p-crypto",
+    "github.com/libp2p/go-libp2p-host",
     "github.com/libp2p/go-libp2p-netutil",
     "github.com/libp2p/go-libp2p-peer",
     "github.com/libp2p/go-libp2p-peerstore",
