@@ -37,9 +37,9 @@ import (
 )
 
 const (
-	imageHash = "QmZXJADp8SEQqHDAGsFCLVzRE4mcJSDVoBkXf5ARYFE65W"
+	imageHash = "QmY9YqKsssJjhYifQPdz6SJoPuMFb2fqhvhei4VEuoJwrp"
 	//peerStr                = "/ip4/127.0.0.1/tcp/9000/ipfs/QmUXmJ52SLQ2URWkLVs1BdqrK7PHMa9a84wpGqueykzaqk"
-	peerStr                = "/ip4/192.168.86.55/tcp/9000/ipfs/QmZ3gsV1L5tEfwns2TeZPr3f4zfC75rRLomeQCeHKqtr6p"
+	peerStr                = "/ip4/192.168.86.57/tcp/9000/ipfs/QmQ5Q2ctzJ64xqwiJ4cZ6VY1orECWabyNnvyapGdyyAxhF"
 	uri                    = "/ip4/0.0.0.0/tcp/9002"
 	shouldSendGenesisBlock = true
 )
