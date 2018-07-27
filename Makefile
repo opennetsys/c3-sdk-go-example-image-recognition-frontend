@@ -4,7 +4,7 @@ all: deps
 deps:
 	@rm -rf ./vendor && \
 	echo "running dep ensure..." && \
-	dep ensure && \
+	dep ensure -v && \
 	$(MAKE) gxundo
 
 .PHONY: gxundo

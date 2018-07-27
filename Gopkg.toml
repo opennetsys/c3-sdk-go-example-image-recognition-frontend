@@ -1,0 +1,50 @@
+# Gopkg.toml example
+#
+# Refer to https://github.com/golang/dep/blob/master/docs/Gopkg.toml.md
+# for detailed Gopkg.toml documentation.
+#
+# required = ["github.com/user/thing/cmd/thing"]
+# ignored = ["github.com/user/project/pkgX", "bitbucket.org/user/project/pkgA/pkgY"]
+#
+# [[constraint]]
+#   name = "github.com/user/project"
+#   version = "1.0.0"
+#
+# [[constraint]]
+#   name = "github.com/user/project2"
+#   branch = "dev"
+#   source = "github.com/myfork/project2"
+#
+# [[override]]
+#   name = "github.com/x/y"
+#   version = "2.4.0"
+#
+# [prune]
+#   non-go = false
+#   go-tests = true
+#   unused-packages = truek
+
+required = [
+	"github.com/gxed/pubsub",
+	"github.com/ipfs/go-ipfs-delay",
+	"github.com/ipfs/go-ipfs-exchange-interface",
+	"github.com/ipfs/go-ipfs-flags",
+	"github.com/ipfs/go-ipfs-pq",
+	"github.com/ipfs/go-ipfs-routing/mock",
+	"github.com/libp2p/go-testutil",
+	"github.com/libp2p/go-libp2p-netutil",
+	"github.com/ipfs/go-datastore",
+	"github.com/ipfs/go-ipfs-ds-help",
+	"github.com/libp2p/go-libp2p-record",
+	"github.com/libp2p/go-libp2p-routing",
+	"github.com/libp2p/go-libp2p-netutil",
+	"github.com/satori/go.uuid"
+]
+
+[[override]]
+  name = "github.com/docker/docker"
+  version = "1.13.1"
+
+[[override]]
+  name = "github.com/satori/go.uuid"
+  revision = "36e9d2ebbde5e3f13ab2e25625fd453271d6522e"

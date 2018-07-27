@@ -1,0 +1,106 @@
+# Gopkg.toml example
+#
+# Refer to https://github.com/golang/dep/blob/master/docs/Gopkg.toml.md
+# for detailed Gopkg.toml documentation.
+#
+# required = ["github.com/user/thing/cmd/thing"]
+# ignored = ["github.com/user/project/pkgX", "bitbucket.org/user/project/pkgA/pkgY"]
+#
+# [[constraint]]
+#   name = "github.com/user/project"
+#   version = "1.0.0"
+#
+# [[constraint]]
+#   name = "github.com/user/project2"
+#   branch = "dev"
+#   source = "github.com/myfork/project2"
+#
+# [[override]]
+#   name = "github.com/x/y"
+#   version = "2.4.0"
+#
+# [prune]
+#   non-go = false
+#   go-tests = true
+#   unused-packages = true
+
+required = [
+  "github.com/ipfs/go-datastore/delayed",
+  "github.com/ipfs/go-datastore/sync",
+  "github.com/ipfs/go-ipfs-delay",
+  "github.com/ipfs/go-ipfs-exchange-interface",
+  "github.com/ipfs/go-ipfs-flags",
+  "github.com/ipfs/go-ipfs-pq",
+  "github.com/ipfs/go-ipfs-routing/mock",
+  "github.com/ipfs/go-log",
+  "github.com/libp2p/go-libp2p-netutil",
+  "github.com/libp2p/go-libp2p/p2p/net/mock"
+]
+
+[[constraint]]
+  name = "github.com/davecgh/go-spew"
+  version = "1.1.0"
+
+[[constraint]]
+  name = "github.com/docker/docker"
+  version = "1.13.1"
+
+[[constraint]]
+  name = "github.com/docker/go-connections"
+  version = "0.3.0"
+
+[prune]
+  go-tests = true
+  unused-packages = true
+
+[[constraint]]
+  name = "github.com/spf13/cobra"
+  version = "0.0.3"
+
+[[override]]
+  name =  "github.com/satori/go.uuid"
+  revision = "36e9d2ebbde5e3f13ab2e25625fd453271d6522e"
+  # last revision before breaking...
+  # revision = "063359185d32c6b045fa171ad7033ea545864fa1"
+
+[[override]]
+  name =  "github.com/ipfs/go-datastore"
+  #version = "v2.4.1"
+  revision = "e9b957d683804610bb830a00aed753633c4a5d36"
+
+[[override]]
+  name = "github.com/ipfs/go-ipfs-delay"
+  version = "v0.0.1"
+
+[[override]]
+  name = "github.com/ipfs/go-ipfs-exchange-interface"
+  version = "v0.0.2"
+
+[[override]]
+  name = "github.com/ipfs/go-ipfs-flags"
+  version = "v0.0.1"
+
+[[override]]
+  name = "github.com/ipfs/go-ipfs-pq"
+  version = "v0.0.1"
+
+[[override]]
+  name = "github.com/ipfs/go-ipfs-routing"
+  version = "v0.0.13"
+  #revision = "ee2d893c7c7ad08922055feafae55462b5a4600a"
+
+[[override]]
+  name = "github.com/ipfs/go-log"
+  version = "v1.5.3"
+
+[[override]]
+  name = "github.com/libp2p/go-libp2p-netutil"
+  version = "v0.4.3"
+
+[[override]]
+  name = "github.com/libp2p/go-libp2p"
+  version = "v6.0.4"
+
+[[constraint]]
+  name = "github.com/libp2p/go-libp2p-blankhost"
+  version = "0.3.3"

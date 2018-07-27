@@ -1,0 +1,13 @@
+{
+  "name": "c3-sdk-go-example-image-recognition-frontend",
+  "author": "adam",
+  "version": "0.0.0",
+  "releaseCmd": "git commit -a -m \"gx publish $VERSION\"",
+  "language": "go",
+  "license": "",
+  "bugs": {
+    "url": "dev/null"
+  },
+  "gxVersion": "0.12.1"
+}
+

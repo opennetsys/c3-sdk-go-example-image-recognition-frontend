@@ -9,11 +9,11 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/c3systems/c3-go/common/c3crypto"
 	"github.com/c3systems/c3-go/core/chain/mainchain"
 	"github.com/c3systems/c3-go/core/chain/statechain"
 	"github.com/c3systems/c3-go/core/p2p/protobuff"
 	nodetypes "github.com/c3systems/c3-go/node/types"
-	"github.com/c3systems/c3/common/c3crypto"
 
 	ipfsaddr "github.com/ipfs/go-ipfs-addr"
 	csms "github.com/libp2p/go-conn-security-multistream"
@@ -142,7 +142,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	newNode.Peerstore().AddAddrs(pinfo.ID, pinfo.Addrs, peerstore.PermanentAddrTTL)
 
 	pBuff, err = protobuff.NewNode(&protobuff.Props{
-		Host:                   *newNode,
+		Host:                   newNode,
 		GetHeadBlockFN:         getHeadblock,
 		BroadcastTransactionFN: broadcastTx,
 	})
