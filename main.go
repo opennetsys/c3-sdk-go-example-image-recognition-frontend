@@ -3,7 +3,9 @@ package main
 import (
 	"bytes"
 	"context"
+	"crypto/ecdsa"
 	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"log"
@@ -14,10 +16,14 @@ import (
 	"github.com/c3systems/c3-go/core/chain/statechain"
 	"github.com/c3systems/c3-go/core/p2p/protobuff"
 	nodetypes "github.com/c3systems/c3-go/node/types"
+	"mod/github.com/davecgh/go-spew@v1.1.0/spew"
 
+	"github.com/c3systems/c3-go/common/txparamcoder"
+	methodTypes "github.com/c3systems/c3-go/core/types/methods"
 	ipfsaddr "github.com/ipfs/go-ipfs-addr"
 	csms "github.com/libp2p/go-conn-security-multistream"
 	lCrypt "github.com/libp2p/go-libp2p-crypto"
+	host "github.com/libp2p/go-libp2p-host"
 	peer "github.com/libp2p/go-libp2p-peer"
 	peerstore "github.com/libp2p/go-libp2p-peerstore"
 	secio "github.com/libp2p/go-libp2p-secio"
@@ -31,13 +37,21 @@ import (
 )
 
 const (
-	imageHash = "foo"
-	peerStr   = "baz"
-	method    = "processImage"
-	uri       = "/ip4/0.0.0.0/tcp/9000"
+	imageHash = "QmZXJADp8SEQqHDAGsFCLVzRE4mcJSDVoBkXf5ARYFE65W"
+	//peerStr                = "/ip4/127.0.0.1/tcp/9000/ipfs/QmUXmJ52SLQ2URWkLVs1BdqrK7PHMa9a84wpGqueykzaqk"
+	peerStr                = "/ip4/192.168.86.55/tcp/9000/ipfs/QmZ3gsV1L5tEfwns2TeZPr3f4zfC75rRLomeQCeHKqtr6p"
+	uri                    = "/ip4/0.0.0.0/tcp/9002"
+	shouldSendGenesisBlock = true
 )
 
-var pBuff *protobuff.Node
+var (
+	pBuff   *protobuff.Node
+	priv    *ecdsa.PrivateKey
+	pub     *ecdsa.PublicKey
+	pubAddr string
+	newNode host.Host
+	peerID  peer.ID
+)
 
 func getHeadblock() (mainchain.Block, error) {
 	return mainchain.Block{}, nil
@@ -48,8 +62,6 @@ func broadcastTx(tx *statechain.Transaction) (*nodetypes.SendTxResponse, error) 
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	ctx := context.Background()
-
 	var buf bytes.Buffer
 	// note: second field is header
 	file, _, err := r.FormFile("file")
@@ -69,106 +81,16 @@ func handler(w http.ResponseWriter, r *http.Request) {
 			http.StatusInternalServerError)
 	}
 
-	wPriv, wPub, err := lCrypt.GenerateKeyPairWithReader(lCrypt.RSA, 4096, rand.Reader)
-	if err != nil {
-		fmt.Printf("err generating keypairs %v", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError)
-	}
-
-	pid, err := peer.IDFromPublicKey(wPub)
-	if err != nil {
-		fmt.Printf("err getting pid %v", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError)
-	}
-
-	listen, err := ma.NewMultiaddr(uri)
-	if err != nil {
-		fmt.Printf("err listening %v", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError)
-	}
-
-	ps := peerstore.NewPeerstore()
-	if err = ps.AddPrivKey(pid, wPriv); err != nil {
-		fmt.Printf("err adding priv key %v", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError)
-	}
-	if err = ps.AddPubKey(pid, wPub); err != nil {
-		fmt.Printf("err adding pub key %v", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError)
-	}
-
-	swarmNet := swarm.NewSwarm(ctx, pid, ps, nil)
-	tcpTransport := tcp.NewTCPTransport(genUpgrader(swarmNet))
-	if err = swarmNet.AddTransport(tcpTransport); err != nil {
-		fmt.Printf("err adding transport %v", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError)
-	}
-	if err = swarmNet.AddListenAddr(listen); err != nil {
-		fmt.Printf("err adding listenaddr %v", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError)
-	}
-	newNode := bhost.New(swarmNet)
-
-	addr, err := ipfsaddr.ParseString(peerStr)
-	if err != nil {
-		fmt.Printf("err parsing peer string %v", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError)
-	}
-
-	pinfo, err := peerstore.InfoFromP2pAddr(addr.Multiaddr())
-	if err != nil {
-		fmt.Printf("err getting pinfo %v", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError)
-	}
-
-	log.Println("[node] FULL", addr.String())
-	log.Println("[node] PIN INFO", pinfo)
-
-	if err = newNode.Connect(ctx, *pinfo); err != nil {
-		fmt.Printf("err connecting to peer %v", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError)
-	}
-
-	newNode.Peerstore().AddAddrs(pinfo.ID, pinfo.Addrs, peerstore.PermanentAddrTTL)
-
-	pBuff, err = protobuff.NewNode(&protobuff.Props{
-		Host:                   newNode,
-		GetHeadBlockFN:         getHeadblock,
-		BroadcastTransactionFN: broadcastTx,
-	})
-	if err != nil {
-		fmt.Printf("error starting protobuff node\n%v", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError)
-	}
-
-	priv, pub, err := c3crypto.NewKeyPair()
-	if err != nil {
-		fmt.Printf("error getting keypair\n%v", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError)
-	}
-	pubAddr, err := c3crypto.EncodeAddress(pub)
-	if err != nil {
-		fmt.Printf("error getting addr\n%v", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError)
-	}
+	payload := txparamcoder.ToJSONArray(
+		txparamcoder.EncodeMethodName("processImage"),
+		txparamcoder.EncodeParam(hex.EncodeToString(buf.Bytes())),
+		txparamcoder.EncodeParam("jpg"), // TODO: read this from the filename...
+	)
 
 	tx := statechain.NewTransaction(&statechain.TransactionProps{
 		ImageHash: imageHash,
-		Method:    method,
-		Payload:   buf.Bytes(),
+		Method:    methodTypes.InvokeMethod,
+		Payload:   payload,
 		From:      pubAddr,
 	})
 	if err = tx.SetSig(priv); err != nil {
@@ -195,15 +117,10 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 	go func() {
 		ch := make(chan interface{})
-		self := newNode.ID()
-		var peer peer.ID
-		for _, peerID := range newNode.Peerstore().Peers() {
-			if peerID != self {
-				peer = peerID
-				break
-			}
+		if err := pBuff.ProcessTransaction.SendTransaction(peerID, txBytes, ch); err != nil {
+			fmt.Printf("err processing tx\n%v", err)
+			return
 		}
-		pBuff.ProcessTransaction.SendTransaction(peer, txBytes, ch)
 
 		res := <-ch
 		fmt.Printf("received response on channel %v", res)
@@ -216,13 +133,25 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	log.Println("building node")
+	if err := buildNode(); err != nil {
+		log.Fatalf("err building node\n%v", err)
+	}
+
+	if shouldSendGenesisBlock {
+		log.Println("sending genesis block")
+		if err := sendGenesisBlock(); err != nil {
+			log.Fatalf("err sending genesis block\n%v", err)
+		}
+	}
+
 	http.HandleFunc("/submit", handler)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "./index.html")
 	})
 
-	log.Println("listening on :8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Println("listening on :8000")
+	log.Fatal(http.ListenAndServe(":8000", nil))
 }
 
 // note: https://github.com/libp2p/go-libp2p-swarm/blob/da01184afe4c67bec58c5e73f3350ad80b624c0d/testing/testing.go#L39
@@ -243,4 +172,132 @@ func genUpgrader(n *swarm.Swarm) *tptu.Upgrader {
 		Muxer:   stMuxer,
 		Filters: n.Filters,
 	}
+}
+
+func sendGenesisBlock() error {
+	ch := make(chan interface{})
+	tx := statechain.NewTransaction(&statechain.TransactionProps{
+		ImageHash: imageHash,
+		Method:    methodTypes.Deploy,
+		Payload:   []byte(``),
+		From:      pubAddr,
+	})
+
+	if err := tx.SetHash(); err != nil {
+		return err
+	}
+
+	if err := tx.SetSig(priv); err != nil {
+		return err
+	}
+
+	txBytes, err := tx.Serialize()
+	if err != nil {
+		return err
+	}
+
+	if err := pBuff.ProcessTransaction.SendTransaction(peerID, txBytes, ch); err != nil {
+		return err
+	}
+
+	v := <-ch
+
+	switch v.(type) {
+	case error:
+		err, _ := v.(error)
+		return err
+
+	default:
+		spew.Dump(v)
+
+		return nil
+	}
+}
+
+func buildNode() error {
+	wPriv, wPub, err := lCrypt.GenerateKeyPairWithReader(lCrypt.RSA, 4096, rand.Reader)
+	if err != nil {
+		fmt.Printf("err generating keypairs %v", err)
+		return err
+	}
+
+	pid, err := peer.IDFromPublicKey(wPub)
+	if err != nil {
+		fmt.Printf("err getting pid %v", err)
+		return err
+	}
+
+	listen, err := ma.NewMultiaddr(uri)
+	if err != nil {
+		fmt.Printf("err listening %v", err)
+		return err
+	}
+
+	ps := peerstore.NewPeerstore()
+	if err = ps.AddPrivKey(pid, wPriv); err != nil {
+		fmt.Printf("err adding priv key %v", err)
+		return err
+	}
+	if err = ps.AddPubKey(pid, wPub); err != nil {
+		fmt.Printf("err adding pub key %v", err)
+		return err
+	}
+
+	swarmNet := swarm.NewSwarm(context.Background(), pid, ps, nil)
+	tcpTransport := tcp.NewTCPTransport(genUpgrader(swarmNet))
+	if err = swarmNet.AddTransport(tcpTransport); err != nil {
+		fmt.Printf("err adding transport %v", err)
+		return err
+	}
+	if err = swarmNet.AddListenAddr(listen); err != nil {
+		fmt.Printf("err adding listenaddr %v", err)
+		return err
+	}
+	newNode = bhost.New(swarmNet)
+
+	addr, err := ipfsaddr.ParseString(peerStr)
+	if err != nil {
+		fmt.Printf("err parsing peer string %v", err)
+		return err
+	}
+
+	pinfo, err := peerstore.InfoFromP2pAddr(addr.Multiaddr())
+	if err != nil {
+		fmt.Printf("err getting pinfo %v", err)
+		return err
+	}
+
+	log.Println("[node] FULL", addr.String())
+	log.Println("[node] PIN INFO", pinfo)
+
+	if err = newNode.Connect(context.Background(), *pinfo); err != nil {
+		fmt.Printf("err connecting to peer %v", err)
+		return err
+	}
+
+	peerID = pinfo.ID
+	newNode.Peerstore().AddAddrs(pinfo.ID, pinfo.Addrs, peerstore.PermanentAddrTTL)
+
+	pBuff, err = protobuff.NewNode(&protobuff.Props{
+		Host:                   newNode,
+		GetHeadBlockFN:         getHeadblock,
+		BroadcastTransactionFN: broadcastTx,
+	})
+	if err != nil {
+		fmt.Printf("error starting protobuff node\n%v", err)
+		return err
+	}
+
+	priv, pub, err = c3crypto.NewKeyPair()
+	if err != nil {
+		fmt.Printf("error getting keypair\n%v", err)
+		return err
+	}
+	pubAddr, err = c3crypto.EncodeAddress(pub)
+	if err != nil {
+		fmt.Printf("error getting addr\n%v", err)
+		return err
+	}
+
+	return nil
 }
