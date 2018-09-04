@@ -11,8 +11,8 @@ import (
 
 	core "github.com/ipfs/go-ipfs/core"
 
-	unix "gx/ipfs/QmVGjyM9i2msKvLXwh9VosCTgP4mL91kC7hDmqnwTTx6Hu/sys/unix"
-	"gx/ipfs/QmYRGECuvQnRX73fcvPnGbYijBcGN2HbKZQ7jh26qmLiHG/semver"
+	unix "golang.org/x/sys/unix"
+	"github.com/blang/semver"
 )
 
 func init() {

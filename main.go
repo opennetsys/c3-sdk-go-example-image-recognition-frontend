@@ -16,7 +16,7 @@ import (
 	"github.com/c3systems/c3-go/core/chain/statechain"
 	"github.com/c3systems/c3-go/core/p2p/protobuff"
 	nodetypes "github.com/c3systems/c3-go/node/types"
-	"mod/github.com/davecgh/go-spew@v1.1.0/spew"
+	"github.com/davecgh/go-spew/spew"
 
 	"github.com/c3systems/c3-go/common/txparamcoder"
 	methodTypes "github.com/c3systems/c3-go/core/types/methods"
@@ -37,10 +37,9 @@ import (
 )
 
 const (
-	imageHash = "QmY9YqKsssJjhYifQPdz6SJoPuMFb2fqhvhei4VEuoJwrp"
-	//peerStr                = "/ip4/127.0.0.1/tcp/9000/ipfs/QmUXmJ52SLQ2URWkLVs1BdqrK7PHMa9a84wpGqueykzaqk"
-	peerStr                = "/ip4/192.168.86.57/tcp/9000/ipfs/QmQ5Q2ctzJ64xqwiJ4cZ6VY1orECWabyNnvyapGdyyAxhF"
-	uri                    = "/ip4/0.0.0.0/tcp/9002"
+	imageHash              = "QmdbiaefYjE4kvJFQ2uQ81HcYPspZwZuEYwpE76h6sq6Za"
+	peerStr                = "/ip4/192.168.99.1/tcp/3330/ipfs/QmZPNaCnnR59Dtw5nUuxv33pNXxRqKurnZTHLNJ6LaqEnx"
+	uri                    = "/ip4/0.0.0.0/tcp/9008"
 	shouldSendGenesisBlock = true
 )
 
