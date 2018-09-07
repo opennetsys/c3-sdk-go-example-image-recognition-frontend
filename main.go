@@ -6,6 +6,7 @@ import (
 	"crypto/ecdsa"
 	"crypto/rand"
 	"encoding/hex"
+	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -36,12 +37,7 @@ import (
 	yamux "github.com/whyrusleeping/go-smux-yamux"
 )
 
-const (
-	imageHash              = "QmdbiaefYjE4kvJFQ2uQ81HcYPspZwZuEYwpE76h6sq6Za"
-	peerStr                = "/ip4/192.168.99.1/tcp/3330/ipfs/QmZPNaCnnR59Dtw5nUuxv33pNXxRqKurnZTHLNJ6LaqEnx"
-	uri                    = "/ip4/0.0.0.0/tcp/9008"
-	shouldSendGenesisBlock = true
-)
+var imageHash string
 
 var (
 	pBuff   *protobuff.Node
@@ -133,11 +129,17 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	log.Println("building node")
-	if err := buildNode(); err != nil {
+
+	imageHashFlag := flag.String("image", "", "Image hash")
+	shouldSendGenesisBlock := flag.Bool("genesis", false, "send genesis block")
+	peer := flag.String("peer", "", "peer multiaddr")
+	flag.Parse()
+	imageHash = *imageHashFlag
+	if err := buildNode(*peer); err != nil {
 		log.Fatalf("err building node\n%v", err)
 	}
 
-	if shouldSendGenesisBlock {
+	if *shouldSendGenesisBlock {
 		log.Println("sending genesis block")
 		if err := sendGenesisBlock(); err != nil {
 			log.Fatalf("err sending genesis block\n%v", err)
@@ -178,7 +180,7 @@ func sendGenesisBlock() error {
 	tx := statechain.NewTransaction(&statechain.TransactionProps{
 		ImageHash: imageHash,
 		Method:    methodTypes.Deploy,
-		Payload:   []byte(``),
+		Payload:   nil,
 		From:      pubAddr,
 	})
 
@@ -213,7 +215,7 @@ func sendGenesisBlock() error {
 	}
 }
 
-func buildNode() error {
+func buildNode(peerStr string) error {
 	wPriv, wPub, err := lCrypt.GenerateKeyPairWithReader(lCrypt.RSA, 4096, rand.Reader)
 	if err != nil {
 		fmt.Printf("err generating keypairs %v", err)
@@ -226,6 +228,7 @@ func buildNode() error {
 		return err
 	}
 
+	uri := "/ip4/0.0.0.0/tcp/9008"
 	listen, err := ma.NewMultiaddr(uri)
 	if err != nil {
 		fmt.Printf("err listening %v", err)
@@ -270,7 +273,7 @@ func buildNode() error {
 	log.Println("[node] PIN INFO", pinfo)
 
 	if err = newNode.Connect(context.Background(), *pinfo); err != nil {
-		fmt.Printf("err connecting to peer %v", err)
+		fmt.Printf("err connecting to peer; %v\n", err)
 		return err
 	}
 
@@ -292,11 +295,14 @@ func buildNode() error {
 		fmt.Printf("error getting keypair\n%v", err)
 		return err
 	}
+
 	pubAddr, err = c3crypto.EncodeAddress(pub)
 	if err != nil {
 		fmt.Printf("error getting addr\n%v", err)
 		return err
 	}
+
+	fmt.Println("FOO\n", pubAddr)
 
 	return nil
 }
