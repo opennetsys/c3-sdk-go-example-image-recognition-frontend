@@ -302,7 +302,5 @@ func buildNode(peerStr string) error {
 		return err
 	}
 
-	fmt.Println("FOO\n", pubAddr)
-
 	return nil
 }
