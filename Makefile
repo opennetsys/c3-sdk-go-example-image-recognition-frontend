@@ -1,9 +1,9 @@
 all: deps
 
 # example:
-# $ make run/node PEER="/ip4/127.0.0.1/tcp/3330/ipfs/QmZPNaCnnR59Dtw5nUuxv33pNXxRqKurnZTHLNJ6LaqEnx" IMAGE="QmSHfs2RyGYZY7fnzuBGAyKTe6Ve4jm5PBjHx3mPa42My3"
-.PHONY: run/node
-run/node:
+# $ make run PEER="/ip4/127.0.0.1/tcp/3330/ipfs/QmZPNaCnnR59Dtw5nUuxv33pNXxRqKurnZTHLNJ6LaqEnx" IMAGE="QmSHfs2RyGYZY7fnzuBGAyKTe6Ve4jm5PBjHx3mPa42My3"
+.PHONY: run
+run:
 	@go run main.go -peer="$(PEER)" -image="$(IMAGE)"
 
 # example:

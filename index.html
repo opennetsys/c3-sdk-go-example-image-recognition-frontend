@@ -3,13 +3,69 @@
   <head>
     <meta charset="utf-8">
     <title>C3 Previvew</title>
+    <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    }
+    .form {
+      display: block;
+      margin: 0 auto;
+      max-width: 500px;
+      text-align: center;
+    }
+    .field {
+      display: block;
+      margin-bottom: 10px;
+    }
+    label {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+    .file {
+      display: inline-block;
+      padding: 20px;
+      background: #effdff;
+      border: 1px solid #cfe4e6;
+      width: 100%;
+      max-width: 300px;
+    }
+    .file:hover {
+      border-color: #aecdd0;
+      cursor: pointer;
+    }
+    .actions {
+      display: block;
+      text-align: center;
+    }
+    .button {
+      display: inline-block;
+      padding: 10px;
+      -webkit-appearance: none;
+      width: 100%;
+      background: #f7f7f7;
+      border: 1px solid #e4e4e4;
+      max-width: 300px;
+    }
+    .button:hover {
+      border-color: #d4d4d4;
+      cursor: pointer;
+    }
+    </style>
   </head>
   <body>
-    <form method="POST" action="/submit" enctype="multipart/form-data">
-      <label>Upload an image<br /><input type="file" name="file" /></label>
-      <br />
-      <br />
-      <button type="submit">Upload</button>
+    <form method="POST" action="/submit" enctype="multipart/form-data" class="form">
+      <div class="field">
+        <label>Upload an image</label>
+        <input type="file" name="file" class="file" />
+      </div>
+      <div class="actions">
+        <button type="submit" class="button">Upload</button>
+      </div>
     </form>
   </body>
 </html>

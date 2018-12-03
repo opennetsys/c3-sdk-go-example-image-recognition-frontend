@@ -11,6 +11,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"encoding/json"
 
 	"github.com/c3systems/c3-go/common/c3crypto"
 	"github.com/c3systems/c3-go/core/chain/mainchain"
@@ -121,7 +122,21 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("received response on channel %v", res)
 	}()
 
-	if _, err = fmt.Fprint(w, *tx.Props().TxHash); err != nil {
+	txhash := *tx.Props().TxHash
+	outputStruct := struct{
+		TxHash string `json:"txHash"`
+	}{
+		TxHash: txhash,
+	}
+
+	output, err := json.Marshal(outputStruct)
+	if err != nil {
+		fmt.Print("marshal response error")
+		http.Error(w, http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError)
+	}
+
+	if _, err = fmt.Fprint(w, string(output)); err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError),
 			http.StatusInternalServerError)
 	}
